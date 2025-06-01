@@ -4,8 +4,13 @@ import './App.css';
 const App = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [currentView, setCurrentView] = useState('home'); // 'home' or 'course-detail'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'course-detail', 'payment'
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(''); // 'login', 'signup', 'payment'
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [paymentStep, setPaymentStep] = useState(1); // 1: method selection, 2: details, 3: confirmation
 
   // Sample course data with PKR pricing for Pakistan
   const courses = [
@@ -208,6 +213,456 @@ const App = () => {
     setSelectedCourse(null);
   };
 
+  const handleEnrollClick = (course) => {
+    if (!isLoggedIn) {
+      setModalType('login');
+      setShowModal(true);
+    } else {
+      setSelectedCourse(course);
+      setModalType('payment');
+      setPaymentStep(1);
+      setShowModal(true);
+    }
+  };
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setIsLoggedIn(true);
+    setShowModal(false);
+    // If they were trying to enroll, redirect to payment
+    if (selectedCourse) {
+      setModalType('payment');
+      setPaymentStep(1);
+      setShowModal(true);
+    }
+  };
+
+  const handleSignup = (userData) => {
+    setUser(userData);
+    setIsLoggedIn(true);
+    setShowModal(false);
+    // If they were trying to enroll, redirect to payment
+    if (selectedCourse) {
+      setModalType('payment');
+      setPaymentStep(1);
+      setShowModal(true);
+    }
+  };
+
+  const handlePaymentComplete = () => {
+    setShowModal(false);
+    setPaymentStep(1);
+    alert('🎉 Enrollment successful! Welcome to ' + selectedCourse.title);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setPaymentStep(1);
+  };
+
+  // Modal Components
+  const LoginModal = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      handleLogin({ email, name: email.split('@')[0] });
+    };
+
+    return (
+      <div className="auth-modal">
+        <div className="auth-header">
+          <h2 className="auth-title">Welcome Back</h2>
+          <p className="auth-subtitle">Access your futuristic learning dashboard</p>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="input-group">
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="futuristic-input"
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="futuristic-input"
+              required
+            />
+          </div>
+          
+          <button type="submit" className="auth-submit-btn">
+            <span>🚀 Enter SkillNest</span>
+          </button>
+        </form>
+
+        <div className="auth-divider">
+          <span>or continue with</span>
+        </div>
+
+        <div className="social-auth">
+          <button className="social-btn google-btn" onClick={() => handleLogin({ email: 'user@gmail.com', name: 'Guest User' })}>
+            <span>📧 Google</span>
+          </button>
+          <button className="social-btn facebook-btn" onClick={() => handleLogin({ email: 'user@facebook.com', name: 'Guest User' })}>
+            <span>📘 Facebook</span>
+          </button>
+        </div>
+
+        <div className="auth-footer">
+          <p>Don't have an account? 
+            <button 
+              className="auth-switch-btn" 
+              onClick={() => setModalType('signup')}
+            >
+              Create Account
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const SignupModal = () => {
+    const [formData, setFormData] = useState({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+      }
+      handleSignup({ email: formData.email, name: formData.name });
+    };
+
+    const handleChange = (e) => {
+      setFormData(prev => ({
+        ...prev,
+        [e.target.name]: e.target.value
+      }));
+    };
+
+    return (
+      <div className="auth-modal">
+        <div className="auth-header">
+          <h2 className="auth-title">Join SkillNest</h2>
+          <p className="auth-subtitle">Start your journey to the future of learning</p>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="input-group">
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleChange}
+              className="futuristic-input"
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={formData.email}
+              onChange={handleChange}
+              className="futuristic-input"
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="futuristic-input"
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="futuristic-input"
+              required
+            />
+          </div>
+          
+          <button type="submit" className="auth-submit-btn">
+            <span>🚀 Create Account</span>
+          </button>
+        </form>
+
+        <div className="auth-divider">
+          <span>or continue with</span>
+        </div>
+
+        <div className="social-auth">
+          <button className="social-btn google-btn" onClick={() => handleSignup({ email: 'user@gmail.com', name: 'Guest User' })}>
+            <span>📧 Google</span>
+          </button>
+          <button className="social-btn facebook-btn" onClick={() => handleSignup({ email: 'user@facebook.com', name: 'Guest User' })}>
+            <span>📘 Facebook</span>
+          </button>
+        </div>
+
+        <div className="auth-footer">
+          <p>Already have an account? 
+            <button 
+              className="auth-switch-btn" 
+              onClick={() => setModalType('login')}
+            >
+              Sign In
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const PaymentModal = () => {
+    const [selectedMethod, setSelectedMethod] = useState('');
+    const [paymentDetails, setPaymentDetails] = useState({
+      jazzCashNumber: '',
+      easyPaisaNumber: '',
+      cardNumber: '',
+      expiryDate: '',
+      cvv: '',
+      accountNumber: '',
+      bankName: ''
+    });
+
+    const paymentMethods = [
+      { id: 'jazzcash', name: 'JazzCash', icon: '📱', popular: true },
+      { id: 'easypaisa', name: 'EasyPaisa', icon: '💳', popular: true },
+      { id: 'bank', name: 'Bank Transfer', icon: '🏦', popular: false },
+      { id: 'card', name: 'Credit/Debit Card', icon: '💳', popular: false }
+    ];
+
+    const handleMethodSelect = (method) => {
+      setSelectedMethod(method);
+      setPaymentStep(2);
+    };
+
+    const handlePaymentSubmit = (e) => {
+      e.preventDefault();
+      setPaymentStep(3);
+      setTimeout(() => {
+        handlePaymentComplete();
+      }, 2000);
+    };
+
+    const renderPaymentStep = () => {
+      if (paymentStep === 1) {
+        return (
+          <div className="payment-methods">
+            <div className="payment-header">
+              <h3>Choose Payment Method</h3>
+              <p>Select your preferred payment option for Pakistan</p>
+            </div>
+            
+            <div className="methods-grid">
+              {paymentMethods.map(method => (
+                <div
+                  key={method.id}
+                  className={`payment-method-card ${method.popular ? 'popular' : ''}`}
+                  onClick={() => handleMethodSelect(method.id)}
+                >
+                  <div className="method-icon">{method.icon}</div>
+                  <div className="method-name">{method.name}</div>
+                  {method.popular && <div className="popular-badge">Popular</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      if (paymentStep === 2) {
+        return (
+          <div className="payment-details">
+            <div className="payment-header">
+              <button className="back-btn" onClick={() => setPaymentStep(1)}>
+                ← Back
+              </button>
+              <h3>Payment Details</h3>
+            </div>
+
+            <form onSubmit={handlePaymentSubmit} className="payment-form">
+              {selectedMethod === 'jazzcash' && (
+                <div className="input-group">
+                  <input
+                    type="tel"
+                    placeholder="JazzCash Mobile Number (03xxxxxxxxx)"
+                    value={paymentDetails.jazzCashNumber}
+                    onChange={(e) => setPaymentDetails(prev => ({ ...prev, jazzCashNumber: e.target.value }))}
+                    className="futuristic-input"
+                    required
+                  />
+                </div>
+              )}
+
+              {selectedMethod === 'easypaisa' && (
+                <div className="input-group">
+                  <input
+                    type="tel"
+                    placeholder="EasyPaisa Mobile Number (03xxxxxxxxx)"
+                    value={paymentDetails.easyPaisaNumber}
+                    onChange={(e) => setPaymentDetails(prev => ({ ...prev, easyPaisaNumber: e.target.value }))}
+                    className="futuristic-input"
+                    required
+                  />
+                </div>
+              )}
+
+              {selectedMethod === 'card' && (
+                <>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      placeholder="Card Number"
+                      value={paymentDetails.cardNumber}
+                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardNumber: e.target.value }))}
+                      className="futuristic-input"
+                      required
+                    />
+                  </div>
+                  <div className="input-row">
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        placeholder="MM/YY"
+                        value={paymentDetails.expiryDate}
+                        onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiryDate: e.target.value }))}
+                        className="futuristic-input"
+                        required
+                      />
+                    </div>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        placeholder="CVV"
+                        value={paymentDetails.cvv}
+                        onChange={(e) => setPaymentDetails(prev => ({ ...prev, cvv: e.target.value }))}
+                        className="futuristic-input"
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {selectedMethod === 'bank' && (
+                <>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      placeholder="Bank Name"
+                      value={paymentDetails.bankName}
+                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, bankName: e.target.value }))}
+                      className="futuristic-input"
+                      required
+                    />
+                  </div>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      placeholder="Account Number"
+                      value={paymentDetails.accountNumber}
+                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, accountNumber: e.target.value }))}
+                      className="futuristic-input"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              <button type="submit" className="payment-submit-btn">
+                <span>💳 Pay {selectedCourse?.price}</span>
+              </button>
+            </form>
+          </div>
+        );
+      }
+
+      if (paymentStep === 3) {
+        return (
+          <div className="payment-confirmation">
+            <div className="confirmation-animation">
+              <div className="success-icon">✅</div>
+              <h3>Processing Payment...</h3>
+              <div className="loading-bar">
+                <div className="loading-progress"></div>
+              </div>
+              <p>Please wait while we confirm your payment</p>
+            </div>
+          </div>
+        );
+      }
+    };
+
+    return (
+      <div className="payment-modal">
+        <div className="order-summary">
+          <h3>Order Summary</h3>
+          <div className="course-summary">
+            <img src={selectedCourse?.image} alt={selectedCourse?.title} />
+            <div className="course-info">
+              <h4>{selectedCourse?.title}</h4>
+              <p>{selectedCourse?.instructor.name}</p>
+              <div className="pricing">
+                <span className="current-price">{selectedCourse?.price}</span>
+                <span className="original-price">{selectedCourse?.originalPrice}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {renderPaymentStep()}
+      </div>
+    );
+  };
+
+  const Modal = () => {
+    if (!showModal) return null;
+
+    return (
+      <div className="modal-overlay" onClick={closeModal}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <button className="modal-close" onClick={closeModal}>×</button>
+          
+          {modalType === 'login' && <LoginModal />}
+          {modalType === 'signup' && <SignupModal />}
+          {modalType === 'payment' && <PaymentModal />}
+        </div>
+      </div>
+    );
+  };
+
   const CourseCard = ({ course, featured = false }) => (
     <div 
       className={`course-card ${featured ? 'featured-card' : ''}`}
@@ -257,8 +712,17 @@ const App = () => {
             </button>
           </div>
           <div className="nav-actions">
-            <button className="login-btn">Login</button>
-            <button className="signup-btn">Sign Up</button>
+            {isLoggedIn ? (
+              <div className="user-info">
+                <span>Welcome, {user?.name}!</span>
+                <button className="logout-btn" onClick={() => setIsLoggedIn(false)}>Logout</button>
+              </div>
+            ) : (
+              <>
+                <button className="login-btn" onClick={() => { setModalType('login'); setShowModal(true); }}>Login</button>
+                <button className="signup-btn" onClick={() => { setModalType('signup'); setShowModal(true); }}>Sign Up</button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -299,7 +763,7 @@ const App = () => {
                 <span className="discount">Save {Math.round(((parseInt(course.originalPrice.replace(/[^\d]/g, '')) - parseInt(course.price.replace(/[^\d]/g, ''))) / parseInt(course.originalPrice.replace(/[^\d]/g, ''))) * 100)}%</span>
               </div>
 
-              <button className="enroll-now-btn">
+              <button className="enroll-now-btn" onClick={() => handleEnrollClick(course)}>
                 <span>🚀 Enroll Now</span>
               </button>
             </div>
@@ -397,7 +861,12 @@ const App = () => {
   );
 
   if (currentView === 'course-detail' && selectedCourse) {
-    return <CourseDetailPage course={selectedCourse} />;
+    return (
+      <>
+        <CourseDetailPage course={selectedCourse} />
+        <Modal />
+      </>
+    );
   }
 
   return (
@@ -416,8 +885,17 @@ const App = () => {
             <a href="#contact" className="nav-link">Contact</a>
           </div>
           <div className="nav-actions">
-            <button className="login-btn">Login</button>
-            <button className="signup-btn">Sign Up</button>
+            {isLoggedIn ? (
+              <div className="user-info">
+                <span>Welcome, {user?.name}!</span>
+                <button className="logout-btn" onClick={() => setIsLoggedIn(false)}>Logout</button>
+              </div>
+            ) : (
+              <>
+                <button className="login-btn" onClick={() => { setModalType('login'); setShowModal(true); }}>Login</button>
+                <button className="signup-btn" onClick={() => { setModalType('signup'); setShowModal(true); }}>Sign Up</button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -583,6 +1061,8 @@ const App = () => {
           </div>
         </div>
       </footer>
+
+      <Modal />
     </div>
   );
 };

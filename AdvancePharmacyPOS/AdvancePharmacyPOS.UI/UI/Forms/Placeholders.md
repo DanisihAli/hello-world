@@ -1,0 +1,18 @@
+This folder will contain additional forms:
+- CompanyInfoForm
+- CategoryForm
+- CurrencyForm
+- SmsSettingsForm
+- UsersForm / ChangePasswordForm
+- CustomersForm
+- SuppliersForm
+- StockInForm / StockOutForm
+- PaymentsForm
+- ServiceBillingForm
+- PurchaseForm / PurchaseDaybook
+- RequisitionForm
+- ProfitLossForm
+- StockReportForm
+- ExpiryReportForm
+- PurchaseDaybookForm
+- LedgerReportForm
